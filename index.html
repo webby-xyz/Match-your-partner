@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
+<title>Find Your Match</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    -webkit-tap-highlight-color:transparent;
+}
+
+html,body{
+    width:100%;
+    height:100%;
+}
+
+body{
+    overflow:hidden;
+    font-family:Arial,Helvetica,sans-serif;
+    color:#fff;
+    background:#08030d;
+}
+
+/* =========================
+   CINEMATIC BACKGROUND
+========================= */
+
+.scene{
+    position:fixed;
+    inset:0;
+    overflow:hidden;
+    background:
+        radial-gradient(circle at 50% 15%,
+        rgba(255,55,150,.28),
+        transparent 25%),
+        radial-gradient(circle at 15% 75%,
+        rgba(145,35,255,.20),
+        transparent 30%),
+        radial-gradient(circle at 90% 80%,
+        rgba(255,30,100,.18),
+        transparent 30%),
+        linear-gradient(
+        145deg,
+        #09020f,
+        #21051f 45%,
+        #08030d
+        );
+}
+
+/* cinematic glow */
+.glow{
+    position:absolute;
+    width:350px;
+    height:350px;
+    border-radius:50%;
+    filter:blur(90px);
+    opacity:.3;
+    animation:glowMove 8s ease-in-out infinite alternate;
+}
+
+.glow.one{
+    background:#ff1685;
+    top:-150px;
+    left:-120px;
+}
+
+.glow.two{
+    background:#812cff;
+    bottom:-180px;
+    right:-100px;
+    animation-delay:2s;
+}
+
+@keyframes glowMove{
+    from{transform:translate(0,0) scale(.9)}
+    to{transform:translate(50px,40px) scale(1.15)}
+}
+
+/* Light rays */
+.ray{
+    position:absolute;
+    top:-25%;
+    width:2px;
+    height:150%;
+    background:linear-gradient(
+        transparent,
+        rgba(255,130,190,.15),
+        transparent
+    );
+    transform:rotate(24deg);
+    filter:blur(2px);
+    animation:rayMove 7s ease-in-out infinite;
+}
+
+.ray.r1{left:15%}
+.ray.r2{left:45%;animation-delay:2s}
+.ray.r3{left:75%;animation-delay:4s}
+
+@keyframes rayMove{
+    0%,100%{opacity:.1;transform:rotate(24deg) translateX(-40px)}
+    50%{opacity:.55;transform:rotate(24deg) translateX(40px)}
+}
+
+/* =========================
+   PARTICLES
+========================= */
+
+.particles,
+.hearts,
+.petals,
+.bokeh{
+    position:absolute;
+    inset:0;
+    pointer-events:none;
+    overflow:hidden;
+}
+
+.particle{
+    position:absolute;
+    width:3px;
+    height:3px;
+    border-radius:50%;
+    background:white;
+    box-shadow:0 0 10px white;
+    animation:particleFloat linear infinite;
+    opacity:.6;
+}
+
+@keyframes particleFloat{
+    from{
+        transform:translateY(110vh) scale(.5);
+        opacity:0;
+    }
+    15%{opacity:.8}
+    85%{opacity:.7}
+    to{
+        transform:translateY(-10vh) scale(1);
+        opacity:0;
+    }
+}
+
+/* Hearts */
+.float-heart{
+    position:absolute;
+    color:#ff4f9a;
+    text-shadow:
+        0 0 8px #ff2d87,
+        0 0 20px rgba(255,45,135,.7);
+    animation:heartFloat linear infinite;
+    opacity:.45;
+}
+
+@keyframes heartFloat{
+    0%{
+        transform:translateY(110vh) rotate(0deg) scale(.5);
+        opacity:0;
+    }
+    15%{opacity:.6}
+    70%{opacity:.5}
+    100%{
+        transform:translateY(-15vh) rotate(35deg) scale(1.2);
+        opacity:0;
+    }
+}
+
+/* Petals */
+.petal{
+    position:absolute;
+    width:13px;
+    height:20px;
+    background:linear-gradient(
+        135deg,
+        #ff4f8e,
+        #a80d50
+    );
+    border-radius:70% 20% 70% 20%;
+    filter:drop-shadow(0 0 5px rgba(255,50,130,.5));
+    animation:petalFall linear infinite;
+    opacity:.55;
+}
+
+@keyframes petalFall{
+    0%{
+        transform:translateY(-15vh) translateX(0)
+        rotate(0deg);
+    }
+    50%{
+        transform:translateY(55vh) translateX(80px)
+        rotate(180deg);
+    }
+    100%{
+        transform:translateY(115vh) translateX(-50px)
+        rotate(360deg);
+    }
+}
+
+/* Bokeh */
+.bokeh-dot{
+    position:absolute;
+    border-radius:50%;
+    background:rgba(255,130,190,.35);
+    filter:blur(2px);
+    box-shadow:0 0 25px rgba(255,80,160,.5);
+    animation:bokehMove ease-in-out infinite alternate;
+}
+
+@keyframes bokehMove{
+    from{
+        transform:translateY(0) scale(.7);
+    }
+    to{
+        transform:translateY(-30px) scale(1.15);
+    }
+}
+
+/* =========================
+   APP
+========================= */
+
+.app{
+    position:relative;
+    z-index:10;
+    width:100%;
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    padding:20px;
+}
+
+.screen{
+    width:100%;
+    max-width:430px;
+    text-align:center;
+    animation:screenIn .8s ease;
+}
+
+.hidden{
+    display:none!important;
+}
+
+/* =========================
+   HEART
+========================= */
+
+.heart-area{
+    width:120px;
+    height:120px;
+    margin:0 auto 12px;
+    position:relative;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+
+.heart-glow{
+    position:absolute;
+    width:90px;
+    height:90px;
+    border-radius:50%;
+    background:#ff2188;
+    filter:blur(35px);
+    opacity:.5;
+    animation:pulse 1.5s infinite;
+}
+
+.main-heart{
+    position:relative;
+    font-size:70px;
+    filter:
+        drop-shadow(0 0 8px #ff278c)
+        drop-shadow(0 0 25px #ff278c);
+    animation:heartBeat 1.25s infinite;
+}
+
+/* =========================
+   SHAYARI
+========================= */
+
+.shayari{
+    font-size:15px;
+    line-height:1.9;
+    color:#e8dce9;
+    margin-bottom:24px;
+    text-shadow:0 2px 12px #000;
+}
+
+.shayari span{
+    color:#ff76b3;
+}
+
+/* =========================
+   GLASS CARD
+========================= */
+
+.card{
+    padding:28px 20px;
+    border-radius:30px;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(255,255,255,.105),
+            rgba(255,255,255,.035)
+        );
+
+    border:1px solid rgba(255,255,255,.16);
+
+    box-shadow:
+        0 30px 80px rgba(0,0,0,.55),
+        inset 0 1px rgba(255,255,255,.12);
+
+    backdrop-filter:blur(22px);
+    -webkit-backdrop-filter:blur(22px);
+}
+
+.title{
+    font-size:30px;
+    font-weight:800;
+    margin-bottom:8px;
+}
+
+.subtitle{
+    color:#aaa2b1;
+    font-size:14px;
+    margin-bottom:25px;
+}
+
+/* Gender */
+.gender-row{
+    display:flex;
+    gap:12px;
+    margin-bottom:18px;
+}
+
+.gender{
+    flex:1;
+    height:105px;
+    border-radius:20px;
+
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+
+    background:rgba(255,255,255,.055);
+    border:1px solid rgba(255,255,255,.1);
+
+    cursor:pointer;
+    transition:.25s;
+}
+
+.gender:active{
+    transform:scale(.95);
+}
+
+.gender-icon{
+    font-size:34px;
+    margin-bottom:8px;
+}
+
+.gender-name{
+    color:#ddd6df;
+    font-size:14px;
+}
+
+.gender.selected{
+    background:
+        linear-gradient(
+            145deg,
+            rgba(181,50,255,.35),
+            rgba(255,40,130,.22)
+        );
+
+    border-color:#df72ff;
+
+    box-shadow:
+        0 0 30px rgba(208,54,255,.25);
+}
+
+/* Button */
+.find-btn{
+    width:100%;
+    height:58px;
+    border:0;
+    border-radius:18px;
+
+    color:white;
+    font-size:16px;
+    font-weight:700;
+
+    background:
+        linear-gradient(
+            100deg,
+            #8629ff,
+            #ff287f
+        );
+
+    box-shadow:
+        0 15px 35px rgba(175,40,255,.3);
+
+    cursor:pointer;
+}
+
+.find-btn:active{
+    transform:scale(.97);
+}
+
+/* =========================
+   MATCHING
+========================= */
+
+.search-icon{
+    width:90px;
+    height:90px;
+    margin:0 auto 25px;
+
+    border-radius:50%;
+
+    border:4px solid rgba(255,255,255,.07);
+    border-top-color:#c12fff;
+    border-right-color:#ff318c;
+
+    animation:spin 1s linear infinite;
+}
+
+.search-title{
+    font-size:28px;
+    font-weight:800;
+    margin-bottom:10px;
+}
+
+.search-status{
+    height:22px;
+    color:#aaa3b1;
+    font-size:14px;
+}
+
+.progress-box{
+    margin-top:28px;
+}
+
+.progress{
+    width:100%;
+    height:7px;
+    border-radius:20px;
+    overflow:hidden;
+    background:rgba(255,255,255,.08);
+}
+
+.progress-bar{
+    width:0%;
+    height:100%;
+    border-radius:20px;
+
+    background:
+        linear-gradient(
+            90deg,
+            #902cff,
+            #ff2e8c
+        );
+
+    box-shadow:0 0 15px #d52dff;
+
+    transition:width .25s linear;
+}
+
+.timer{
+    margin-top:13px;
+    color:#918996;
+    font-size:13px;
+}
+
+/* =========================
+   FINAL
+========================= */
+
+.final-screen{
+    position:fixed;
+    z-index:100;
+    inset:0;
+    background:#000;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+}
+
+.final-image{
+    width:100%;
+    height:100%;
+    object-fit:contain;
+
+    animation:finalReveal 1s ease;
+}
+
+/* =========================
+   ANIMATIONS
+========================= */
+
+@keyframes spin{
+    to{transform:rotate(360deg)}
+}
+
+@keyframes pulse{
+    0%,100%{
+        transform:scale(.75);
+        opacity:.3;
+    }
+    50%{
+        transform:scale(1.2);
+        opacity:.6;
+    }
+}
+
+@keyframes heartBeat{
+    0%,100%{transform:scale(1)}
+    15%{transform:scale(1.16)}
+    30%{transform:scale(1)}
+}
+
+@keyframes screenIn{
+    from{
+        opacity:0;
+        transform:translateY(20px) scale(.97);
+    }
+    to{
+        opacity:1;
+        transform:translateY(0) scale(1);
+    }
+}
+
+@keyframes finalReveal{
+    from{
+        opacity:0;
+        transform:scale(.9);
+    }
+    to{
+        opacity:1;
+        transform:scale(1);
+    }
+}
+</style>
+</head>
+
+<body>
+
+<!-- CINEMATIC BACKGROUND -->
+<div class="scene">
+
+    <div class="glow one"></div>
+    <div class="glow two"></div>
+
+    <div class="ray r1"></div>
+    <div class="ray r2"></div>
+    <div class="ray r3"></div>
+
+    <div class="bokeh" id="bokeh"></div>
+    <div class="particles" id="particles"></div>
+    <div class="hearts" id="hearts"></div>
+    <div class="petals" id="petals"></div>
+
+</div>
+
+
+<div class="app">
+
+    <!-- START SCREEN -->
+    <div class="screen" id="startScreen">
+
+        <div class="heart-area">
+            <div class="heart-glow"></div>
+            <div class="main-heart">❤️</div>
+        </div>
+
+        <div class="shayari">
+            "कुछ रिश्ते किस्मत से मिलते हैं,<br>
+            कुछ मुलाकातें दिल में बस जाती हैं...<br>
+            <span>शायद आज तुम्हारी बारी है ❤️</span>"
+        </div>
+
+        <div class="card">
+
+            <div class="title">
+                Find Your Match
+            </div>
+
+            <div class="subtitle">
+                Discover someone compatible with you
+            </div>
+
+            <div class="gender-row">
+
+                <div class="gender"
+                     onclick="chooseGender(this,'Girl')">
+
+                    <div class="gender-icon">👩</div>
+                    <div class="gender-name">Girl</div>
+
+                </div>
+
+                <div class="gender"
+                     onclick="chooseGender(this,'Boy')">
+
+                    <div class="gender-icon">👨</div>
+                    <div class="gender-name">Boy</div>
+
+                </div>
+
+            </div>
+
+            <button class="find-btn"
+                    onclick="startMatch()">
+
+                ❤️ Find My Match
+
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- MATCHING SCREEN -->
+    <div class="screen hidden" id="searchScreen">
+
+        <div class="card">
+
+            <div class="search-icon"></div>
+
+            <div class="search-title">
+                Finding your match
+            </div>
+
+            <div class="search-status"
+                 id="status">
+                Searching compatible profiles...
+            </div>
+
+            <div class="progress-box">
+
+                <div class="progress">
+                    <div class="progress-bar"
+                         id="progressBar">
+                    </div>
+                </div>
+
+                <div class="timer"
+                     id="timer">
+                    30 seconds remaining
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- FINAL -->
+<div class="final-screen hidden"
+     id="finalScreen">
+
+    <img src="match.jpg"
+         class="final-image"
+         alt="">
+
+</div>
+
+
+<audio id="matchAudio"
+       src="song.mp3"
+       preload="auto"></audio>
+
+
+<script>
+
+/* =========================
+   CREATE PARTICLES
+========================= */
+
+const particles =
+document.getElementById("particles");
+
+for(let i=0;i<45;i++){
+
+    const p=document.createElement("div");
+
+    p.className="particle";
+
+    p.style.left=Math.random()*100+"%";
+
+    p.style.animationDuration=
+        (5+Math.random()*8)+"s";
+
+    p.style.animationDelay=
+        (-Math.random()*10)+"s";
+
+    p.style.transform=
+        `scale(${.4+Math.random()})`;
+
+    particles.appendChild(p);
+}
+
+
+/* =========================
+   CREATE HEARTS
+========================= */
+
+const hearts=
+document.getElementById("hearts");
+
+const heartSymbols=["♥","❤","♡","💗","💖"];
+
+for(let i=0;i<24;i++){
+
+    const h=document.createElement("div");
+
+    h.className="float-heart";
+
+    h.innerHTML=
+        heartSymbols[
+            Math.floor(Math.random()*heartSymbols.length)
+        ];
+
+    h.style.left=Math.random()*100+"%";
+
+    h.style.fontSize=
+        (12+Math.random()*22)+"px";
+
+    h.style.animationDuration=
+        (7+Math.random()*9)+"s";
+
+    h.style.animationDelay=
+        (-Math.random()*12)+"s";
+
+    hearts.appendChild(h);
+}
+
+
+/* =========================
+   CREATE PETALS
+========================= */
+
+const petals=
+document.getElementById("petals");
+
+for(let i=0;i<18;i++){
+
+    const p=document.createElement("div");
+
+    p.className="petal";
+
+    p.style.left=Math.random()*100+"%";
+
+    p.style.animationDuration=
+        (7+Math.random()*8)+"s";
+
+    p.style.animationDelay=
+        (-Math.random()*12)+"s";
+
+    p.style.transform=
+        `scale(${.5+Math.random()*.8})`;
+
+    petals.appendChild(p);
+}
+
+
+/* =========================
+   BOKEH LIGHTS
+========================= */
+
+const bokeh=
+document.getElementById("bokeh");
+
+for(let i=0;i<16;i++){
+
+    const b=document.createElement("div");
+
+    b.className="bokeh-dot";
+
+    const size=
+        8+Math.random()*25;
+
+    b.style.width=size+"px";
+    b.style.height=size+"px";
+
+    b.style.left=
+        Math.random()*100+"%";
+
+    b.style.top=
+        Math.random()*100+"%";
+
+    b.style.animationDuration=
+        (3+Math.random()*5)+"s";
+
+    b.style.animationDelay=
+        (-Math.random()*5)+"s";
+
+    bokeh.appendChild(b);
+}
+
+
+/* =========================
+   MATCHMAKING
+========================= */
+
+let selectedGender=null;
+
+function chooseGender(element,gender){
+
+    selectedGender=gender;
+
+    document
+    .querySelectorAll(".gender")
+    .forEach(function(item){
+
+        item.classList.remove("selected");
+
+    });
+
+    element.classList.add("selected");
+}
+
+
+function startMatch(){
+
+    if(!selectedGender){
+        return;
+    }
+
+    document
+    .getElementById("startScreen")
+    .classList.add("hidden");
+
+    document
+    .getElementById("searchScreen")
+    .classList.remove("hidden");
+
+    runMatching();
+}
+
+
+function runMatching(){
+
+    const duration=30000;
+
+    const start=Date.now();
+
+    const bar=
+        document.getElementById("progressBar");
+
+    const timer=
+        document.getElementById("timer");
+
+    const status=
+        document.getElementById("status");
+
+
+    const messages=[
+        "Searching compatible profiles...",
+        "Checking preferences...",
+        "Analyzing compatibility...",
+        "Finding potential matches...",
+        "Comparing profiles...",
+        "Finalizing your match..."
+    ];
+
+
+    let previous=-1;
+
+
+    function update(){
+
+        const elapsed=
+            Date.now()-start;
+
+        let progress=
+            (elapsed/duration)*100;
+
+        if(progress>100){
+            progress=100;
+        }
+
+
+        bar.style.width=
+            progress+"%";
+
+
+        const remaining=
+            Math.ceil(
+                (duration-elapsed)/1000
+            );
+
+
+        timer.textContent=
+            Math.max(remaining,0)
+            +" seconds remaining";
+
+
+        const index=
+            Math.min(
+                Math.floor(progress/17),
+                messages.length-1
+            );
+
+
+        if(index!==previous){
+
+            status.textContent=
+                messages[index];
+
+            previous=index;
+        }
+
+
+        if(elapsed>=duration){
+
+            showFinal();
+            return;
+        }
+
+
+        requestAnimationFrame(update);
+    }
+
+
+    requestAnimationFrame(update);
+}
+
+
+/* =========================
+   FINAL RESULT
+========================= */
+
+function showFinal(){
+
+    document
+    .getElementById("searchScreen")
+    .classList.add("hidden");
+
+    document
+    .getElementById("finalScreen")
+    .classList.remove("hidden");
+
+
+    const audio=
+        document.getElementById("matchAudio");
+
+    audio.currentTime=0;
+
+    audio.play().catch(function(){
+
+        /*
+        Browser audio restrictions
+        होने पर page फिर भी normal रहेगा.
+        */
+
+    });
+}
+
+</script>
+
+</body>
+      </html>
